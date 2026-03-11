@@ -2,20 +2,184 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <meta name="theme-color" content="#1c1c1c" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+
+  <!-- PWA Core -->
+  <meta name="theme-color" content="#e8a020" />
+  <meta name="application-name" content="YuGrill Stock" />
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- iOS PWA -->
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="YuGrill" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="/icon-152x152.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png" />
+
+  <!-- Android / Windows -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="msapplication-TileColor" content="#e8a020" />
+  <meta name="msapplication-TileImage" content="/icon-144x144.png" />
+
+  <!-- SEO / Share -->
+  <meta name="description" content="ระบบจัดการสต๊อคร้าน YuGrill" />
+  <meta property="og:title" content="YuGrill Stock" />
+  <meta property="og:description" content="ระบบจัดการสต๊อคร้าน YuGrill" />
+  <meta property="og:image" content="/icon-512x512.png" />
+
   <title>YuGrill Stock</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍽️</text></svg>" />
+
+  <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/icon-96x96.png" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet" />
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #f5f0eb; }
-    #root { min-height: 100vh; }
+    html, body {
+      background: #1c1c1c;
+      overscroll-behavior: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    #root { min-height: 100vh; min-height: 100dvh; }
+
+    /* iOS safe area support */
+    #root {
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    /* Splash screen */
+    #splash {
+      position: fixed; inset: 0; z-index: 9999;
+      background: #1c1c1c;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 18px;
+      transition: opacity 0.4s ease;
+    }
+    #splash.hide { opacity: 0; pointer-events: none; }
+    #splash img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; }
+    #splash .title { color: #f0f0f0; font-size: 22px; font-weight: 800; font-family: 'Sarabun', sans-serif; }
+    #splash .dots { display: flex; gap: 8px; }
+    #splash .dot {
+      width: 10px; height: 10px; border-radius: 50%; background: #e8a020;
+      animation: splashBounce 1s infinite;
+    }
+    #splash .dot:nth-child(2) { animation-delay: 0.2s; }
+    #splash .dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes splashBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    /* PWA install prompt */
+    #install-prompt {
+      position: fixed; bottom: 80px; left: 16px; right: 16px; z-index: 500;
+      background: #1c1c1c; border: 1.5px solid #e8a020; border-radius: 16px;
+      padding: 14px 16px; display: none; align-items: center; gap: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    }
+    #install-prompt.show { display: flex; }
+    #install-prompt img { width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0; }
+    #install-prompt .txt { flex: 1; }
+    #install-prompt .txt h4 { color: #f0f0f0; font-size: 14px; font-weight: 800; font-family: 'Sarabun', sans-serif; margin-bottom: 2px; }
+    #install-prompt .txt p { color: #888; font-size: 12px; font-family: 'Sarabun', sans-serif; }
+    #install-prompt button {
+      font-family: 'Sarabun', sans-serif; font-weight: 800; font-size: 13px;
+      border: none; border-radius: 9px; padding: 8px 14px; cursor: pointer;
+    }
+    #install-btn { background: #e8a020; color: #fff; }
+    #install-dismiss { background: #333; color: #aaa; margin-left: 6px; }
   </style>
 </head>
 <body>
+  <!-- Splash screen -->
+  <div id="splash">
+    <img src="/icon-192x192.png" alt="YuGrill" />
+    <div class="title">YuGrill Stock</div>
+    <div class="dots">
+      <div class="dot"></div>
+      <div class="dot"></div>
+      <div class="dot"></div>
+    </div>
+  </div>
+
+  <!-- PWA Install Banner -->
+  <div id="install-prompt">
+    <img src="/icon-192x192.png" alt="YuGrill" />
+    <div class="txt">
+      <h4>ติดตั้ง YuGrill Stock</h4>
+      <p>เพิ่มลงหน้าจอหลักสำหรับใช้งานง่ายขึ้น</p>
+    </div>
+    <button id="install-btn">ติดตั้ง</button>
+    <button id="install-dismiss">✕</button>
+  </div>
+
   <div id="root"></div>
+
   <script type="module" src="/src/main.jsx"></script>
+
+  <script>
+    // Hide splash after app loads
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        const splash = document.getElementById('splash');
+        if (splash) {
+          splash.classList.add('hide');
+          setTimeout(() => splash.remove(), 400);
+        }
+      }, 1200);
+    });
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(reg => {
+          console.log('SW registered:', reg.scope);
+        }).catch(err => console.log('SW error:', err));
+      });
+    }
+
+    // PWA Install prompt
+    let deferredPrompt;
+    const installPrompt = document.getElementById('install-prompt');
+    const installBtn = document.getElementById('install-btn');
+    const dismissBtn = document.getElementById('install-dismiss');
+
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      // Show after 3s if not dismissed before
+      if (!sessionStorage.getItem('pwa-dismissed')) {
+        setTimeout(() => installPrompt.classList.add('show'), 3000);
+      }
+    });
+
+    installBtn.addEventListener('click', async () => {
+      installPrompt.classList.remove('show');
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        deferredPrompt = null;
+      }
+    });
+
+    dismissBtn.addEventListener('click', () => {
+      installPrompt.classList.remove('show');
+      sessionStorage.setItem('pwa-dismissed', '1');
+    });
+
+    window.addEventListener('appinstalled', () => {
+      installPrompt.classList.remove('show');
+      deferredPrompt = null;
+    });
+  </script>
 </body>
 </html>

@@ -477,7 +477,6 @@ export default function App(){
   // ── Loading ──
   if(!dbReady)return(
     <div style={{fontFamily:"'Sarabun','Noto Sans Thai',sans-serif",minHeight:"100vh",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",background:T.bg,gap:16}}>
-      <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet"/>
       <img src={LOGO_SRC} alt="YuGrill" style={{width:90,height:90,borderRadius:"50%",objectFit:"cover"}}/>
       <div style={{fontWeight:800,fontSize:20,color:T.text}}>YuGrill Stock</div>
       <div style={{display:"flex",gap:6}}>
@@ -828,7 +827,6 @@ export default function App(){
   // ──────────────────────────────────────────────────────────────
   return(
     <div style={{fontFamily:"'Sarabun','Noto Sans Thai',sans-serif",background:T.bg,minHeight:"100vh",color:T.text,display:"flex",flexDirection:"column",transition:"background .2s,color .2s"}}>
-      <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;600;700;800&display=swap" rel="stylesheet"/>
 
       {toast&&<div style={{position:"fixed",top:16,left:"50%",transform:"translateX(-50%)",zIndex:9999,background:toast.type==="error"?"#c62828":"#1c1c1c",color:"#fff",padding:"11px 22px",borderRadius:50,fontWeight:700,fontSize:14,boxShadow:"0 4px 24px rgba(0,0,0,.35)",animation:"slideDown .25s ease",whiteSpace:"nowrap"}}>
         {toast.type==="error"?"⚠️":"✅"} {toast.msg}
@@ -901,7 +899,7 @@ export default function App(){
           </div>
         </aside>}
 
-        <main style={{flex:1,overflowY:"auto",paddingBottom:mob?80:0}}>
+        <main style={{flex:1,overflowY:"auto",paddingBottom:mob?"calc(80px + env(safe-area-inset-bottom))":0}}>
           {page==="stock"    && renderStock()}
           {page==="log"      && renderLog()}
           {page==="summary"  && renderSummary()}
@@ -909,7 +907,7 @@ export default function App(){
         </main>
       </div>
 
-      {mob&&<nav style={{position:"fixed",bottom:0,left:0,right:0,background:T.navBg,borderTop:"1px solid "+T.navBorder,display:"grid",gridTemplateColumns:"repeat(4,1fr)",zIndex:200,boxShadow:"0 -2px 14px rgba(0,0,0,.12)"}}>
+      {mob&&<nav style={{position:"fixed",bottom:0,left:0,right:0,background:T.navBg,borderTop:"1px solid "+T.navBorder,display:"grid",gridTemplateColumns:"repeat(4,1fr)",zIndex:200,boxShadow:"0 -2px 14px rgba(0,0,0,.12)",paddingBottom:"env(safe-area-inset-bottom)"}}>
         {NAV.map(n=>(
           <button key={n.id} onClick={()=>navTo(n.id)} style={{background:"none",border:"none",padding:"9px 4px 10px",cursor:"pointer",fontFamily:"inherit",display:"flex",flexDirection:"column",alignItems:"center",gap:2,position:"relative"}}>
             {page===n.id&&<div style={{position:"absolute",top:0,left:"50%",transform:"translateX(-50%)",width:26,height:3,background:"#e8a020",borderRadius:"0 0 3px 3px"}}/>}
