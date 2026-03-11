@@ -182,19 +182,6 @@ function ItemCard({item,delta,mob,dark,onMinus,onPlus,onDeltaChange,onEdit,onDel
 // ── App ───────────────────────────────────────────────────────────
 export default function App(){
   const [dark,setDark]=useState(()=>{ try{return localStorage.getItem("yugrill-theme")==="dark";}catch{return false;} });
-  const [installPrompt,setInstallPrompt]=useState(null);
-  const [showInstall,setShowInstall]=useState(false);
-  useEffect(()=>{
-    const h=e=>{e.preventDefault();setInstallPrompt(e);setShowInstall(true);};
-    window.addEventListener("beforeinstallprompt",h);
-    return()=>window.removeEventListener("beforeinstallprompt",h);
-  },[]);
-  const handleInstall=useCallback(async()=>{
-    if(!installPrompt)return;
-    installPrompt.prompt();
-    const{outcome}=await installPrompt.userChoice;
-    if(outcome==="accepted"){setShowInstall(false);setInstallPrompt(null);}
-  },[installPrompt]);
   const T=dark?DARK:LIGHT;
   const toggleTheme=useCallback(()=>{setDark(d=>{const n=!d;try{localStorage.setItem("yugrill-theme",n?"dark":"light");}catch{}return n;});},[] );
   const inputSt=useMemo(()=>({width:"100%",padding:"11px 14px",borderRadius:10,border:"1.5px solid "+T.inputBorder,fontFamily:"inherit",fontSize:15,boxSizing:"border-box",background:T.input,color:T.text}),[T]);
@@ -764,17 +751,6 @@ export default function App(){
         </div>
       </Modal>}
 
-      {showInstall&&<div style={{position:"fixed",bottom:mob?80:20,left:"50%",transform:"translateX(-50%)",zIndex:8000,background:T.accent,color:"#000",borderRadius:16,padding:"12px 18px",display:"flex",alignItems:"center",gap:12,boxShadow:"0 8px 32px rgba(232,160,32,.4)",maxWidth:320,width:"calc(100% - 32px)"}}>
-        <img src={LOGO_SRC} alt="" style={{width:38,height:38,borderRadius:"50%",objectFit:"cover",flexShrink:0}}/>
-        <div style={{flex:1,minWidth:0}}>
-          <div style={{fontWeight:800,fontSize:14,lineHeight:1.2}}>ติดตั้ง YuGrill Stock</div>
-          <div style={{fontSize:11,opacity:.8,marginTop:2}}>เพิ่มลงหน้าจอหลักเพื่อใช้งานแบบ App</div>
-        </div>
-        <div style={{display:"flex",flexDirection:"column",gap:5,flexShrink:0}}>
-          <button onClick={handleInstall} style={{background:"#000",color:T.accent,border:"none",borderRadius:8,padding:"6px 12px",fontFamily:"inherit",fontWeight:800,fontSize:12,cursor:"pointer"}}>ติดตั้ง</button>
-          <button onClick={()=>setShowInstall(false)} style={{background:"rgba(0,0,0,.2)",color:"#000",border:"none",borderRadius:8,padding:"4px 12px",fontFamily:"inherit",fontWeight:600,fontSize:11,cursor:"pointer"}}>ไม่ใช่ตอนนี้</button>
-        </div>
-      </div>}
       <style>{`
         @keyframes slideDown{from{opacity:0;transform:translate(-50%,-12px)}to{opacity:1;transform:translate(-50%,0)}}
         @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,160,32,.4)}50%{box-shadow:0 0 0 8px rgba(232,160,32,0)}}
@@ -784,10 +760,6 @@ export default function App(){
         input:focus,select:focus{outline:2px solid #e8a020 !important;}
         button:active{opacity:.75;transform:scale(.97);}
         ::-webkit-scrollbar{display:none;}
-        @supports(padding:max(0px)){
-          nav{padding-bottom:max(10px,env(safe-area-inset-bottom));}
-          header{padding-top:env(safe-area-inset-top);}
-        }
       `}</style>
     </div>
   );
