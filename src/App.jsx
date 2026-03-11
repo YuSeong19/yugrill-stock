@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback, memo, useRef } from "react";
 import { initializeApp } from "firebase/app";
 import { getDatabase, ref, onValue, set, update, remove } from "firebase/database";
 
@@ -110,7 +110,10 @@ export default function App() {
   const [logPinUnlocked, setLogPinUnlocked] = useState(false);
   const [logAction,      setLogAction]      = useState(null);
   const [editLogData,    setEditLogData]    = useState(null);
+  const [sortCol,        setSortCol]        = useState("status");
+  const [sortDir,        setSortDir]        = useState("asc");
   const [mob, setMob] = useState(() => typeof window !== "undefined" ? window.innerWidth < 768 : false);
+  const searchRef = useRef(null);
 
   useEffect(() => {
     const fn = () => setMob(window.innerWidth < 768);
@@ -341,7 +344,18 @@ export default function App() {
   const StockPage = () => (
     <div style={{ padding:pad }}>
       <div style={{ display:"flex", gap:10, marginBottom:14, flexWrap:"wrap", alignItems:"center" }}>
-        <input placeholder="🔍 ค้นหา..." value={search} onChange={e => setSearch(e.target.value)} style={{ ...inputSt, flex:1, minWidth:120, maxWidth:mob?9999:260 }} />
+        <input
+          ref={searchRef}
+          placeholder="🔍 ค้นหา..."
+          defaultValue={search}
+          onChange={e => setSearch(e.target.value)}
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="off"
+          spellCheck={false}
+          inputMode="search"
+          style={{ ...inputSt, flex:1, minWidth:120, maxWidth:mob?9999:260 }}
+        />
         {!mob && (
           <>
             <button onClick={openAdd} style={{ background:"#1c1c1c", color:"#fff", border:"none", borderRadius:9, padding:"11px 18px", fontFamily:"inherit", fontWeight:700, fontSize:14, cursor:"pointer" }}>＋ เพิ่มสินค้า</button>
@@ -467,9 +481,6 @@ export default function App() {
   );
 
   const SummaryPage = () => {
-    const [sortCol, setSortCol] = useState("status");
-    const [sortDir, setSortDir] = useState("asc");
-
     const handleSort = col => {
       if (sortCol === col) setSortDir(d => d==="asc"?"desc":"asc");
       else { setSortCol(col); setSortDir("asc"); }
@@ -651,7 +662,16 @@ export default function App() {
     <div style={{ background:"#fff", borderRadius:13, padding:17, boxShadow:"0 2px 8px rgba(0,0,0,.07)" }}>
       <div style={{ fontWeight:700, fontSize:14, marginBottom:11 }}>{title}</div>
       <div style={{ display:"flex", gap:8, marginBottom:11 }}>
-        <input placeholder={placeholder} value={inputVal} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key==="Enter" && onAdd()} style={{ ...inputSt, flex:1, fontSize:14 }} />
+        <input
+        placeholder={placeholder}
+        value={inputVal}
+        onChange={e => setInput(e.target.value)}
+        onKeyDown={e => e.key==="Enter" && onAdd()}
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
+        style={{ ...inputSt, flex:1, fontSize:14 }}
+      />
         <button onClick={onAdd} style={{ background:"#1c1c1c", color:"#fff", border:"none", borderRadius:9, padding:"0 15px", fontFamily:"inherit", fontWeight:700, cursor:"pointer", fontSize:14, flexShrink:0 }}>+ เพิ่ม</button>
       </div>
       <div style={{ display:"flex", flexWrap:"wrap", gap:7 }}>{chips}</div>
@@ -780,10 +800,10 @@ export default function App() {
           </aside>
         )}
         <main style={{ flex:1, overflowY:"auto", paddingBottom:mob?80:0 }}>
-          {page==="stock"    && <StockPage />}
-          {page==="log"      && <LogPage />}
-          {page==="summary"  && <SummaryPage />}
-          {page==="settings" && <SettingsPage />}
+          {page==="stock"    && StockPage()}
+          {page==="log"      && LogPage()}
+          {page==="summary"  && SummaryPage()}
+          {page==="settings" && SettingsPage()}
         </main>
       </div>
 
@@ -804,7 +824,14 @@ export default function App() {
         <Modal>
           <h3 style={{ fontWeight:800, fontSize:18, marginBottom:16 }}>{showModal==="add" ? "➕ เพิ่มสินค้าใหม่" : "✏️ แก้ไขสินค้า"}</h3>
           <div style={{ display:"grid", gridTemplateColumns:mob?"1fr":"1fr 1fr", gap:12 }}>
-            <div><label style={{ fontSize:12, color:"#555", fontWeight:600, display:"block", marginBottom:5 }}>ชื่อสินค้า *</label><input value={formData.name} onChange={e => setFormData(p => ({ ...p, name:e.target.value }))} style={inputSt} /></div>
+            <div><label style={{ fontSize:12, color:"#555", fontWeight:600, display:"block", marginBottom:5 }}>ชื่อสินค้า *</label><input
+              value={formData.name}
+              onChange={e => setFormData(p => ({ ...p, name:e.target.value }))}
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
+              style={inputSt}
+            /></div>
             <div><label style={{ fontSize:12, color:"#555", fontWeight:600, display:"block", marginBottom:5 }}>จำนวน *</label><input type="number" value={formData.qty} onChange={e => setFormData(p => ({ ...p, qty:e.target.value }))} style={inputSt} /></div>
             <div><label style={{ fontSize:12, color:"#555", fontWeight:600, display:"block", marginBottom:5 }}>โซนทำงาน *</label><select value={formData.zone} onChange={e => setFormData(p => ({ ...p, zone:e.target.value }))} style={inputSt}>{zones.map(z => { const zc=getZC(z); return <option key={z} value={z}>{zc.icon} {z}</option>; })}</select></div>
             <div><label style={{ fontSize:12, color:"#555", fontWeight:600, display:"block", marginBottom:5 }}>ประเภท *</label><select value={formData.category} onChange={e => setFormData(p => ({ ...p, category:e.target.value }))} style={inputSt}>{categories.map(c => <option key={c}>{c}</option>)}</select></div>
@@ -837,7 +864,15 @@ export default function App() {
             <h3 style={{ fontWeight:800, fontSize:18, marginBottom:4 }}>💾 บันทึกรายการ</h3>
             <p style={{ color:"#999", fontSize:13, marginBottom:16 }}>ตรวจสอบและยืนยันการบันทึกสต๊อค</p>
             <div style={{ display:"grid", gridTemplateColumns:mob?"1fr":"1fr 1fr", gap:10, marginBottom:16 }}>
-              <div><label style={{ fontSize:12, fontWeight:600, color:"#555", display:"block", marginBottom:5 }}>ชื่อพนักงาน *</label><input placeholder="กรอกชื่อ..." value={staffName} onChange={e => setStaffName(e.target.value)} style={inputSt} /></div>
+              <div><label style={{ fontSize:12, fontWeight:600, color:"#555", display:"block", marginBottom:5 }}>ชื่อพนักงาน *</label><input
+                placeholder="กรอกชื่อ..."
+                value={staffName}
+                onChange={e => setStaffName(e.target.value)}
+                autoComplete="off"
+                autoCorrect="off"
+                spellCheck={false}
+                style={inputSt}
+              /></div>
               <div><label style={{ fontSize:12, fontWeight:600, color:"#555", display:"block", marginBottom:5 }}>วันที่บันทึก</label><input type="date" value={logDate} onChange={e => setLogDate(e.target.value)} style={inputSt} /></div>
             </div>
             <div style={{ display:"flex", gap:8, marginBottom:14 }}>
@@ -942,7 +977,15 @@ export default function App() {
           <div style={{ display:"grid", gap:12, marginBottom:20 }}>
             <div>
               <label style={{ fontSize:12, fontWeight:600, color:"#555", display:"block", marginBottom:5 }}>ชื่อพนักงาน *</label>
-              <input value={editLogData.staff} onChange={e => setEditLogData(p => ({ ...p, staff:e.target.value }))} style={inputSt} placeholder="ชื่อพนักงาน..." />
+              <input
+              value={editLogData.staff}
+              onChange={e => setEditLogData(p => ({ ...p, staff:e.target.value }))}
+              autoComplete="off"
+              autoCorrect="off"
+              spellCheck={false}
+              style={inputSt}
+              placeholder="ชื่อพนักงาน..."
+            />
             </div>
             <div>
               <label style={{ fontSize:12, fontWeight:600, color:"#555", display:"block", marginBottom:5 }}>วันที่บันทึก</label>
